@@ -6,4 +6,3 @@ mkdir -p /var/lib/cassandra
 cd bin
 cassandra
 sleep 5
-./setup-databases.sh localhost cql redlaser 1

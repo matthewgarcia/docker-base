@@ -10,8 +10,6 @@ RUN tar xzf apache-cassandra-1.2.5-bin.tar.gz
 RUN mv apache-cassandra-1.2.5 cassandra
 env PATH /cassandra/bin:$PATH
 
-ADD cql cassandra/bin/cql
-ADD setup-databases.sh cassandra/bin/setup-databases.sh
 ADD setup-cassandra.sh ./setup-cassandra.sh
 ENV PATH /java/bin:$PATH
 ENV JAVA_HOME /java
