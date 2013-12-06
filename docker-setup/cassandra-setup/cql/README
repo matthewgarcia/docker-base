@@ -1,0 +1,63 @@
+README.txt
+08/22/2013
+
+In this directory are the create scripts for the Cassandra tables for the SIP schema. Aside from the keyspace.cql file, they can be run in any order.
+
+The challenge we face with this schema is that we're essentially trying to create a multidimensional cube, OLAP-style. In a relational database-backed OLAP system, this generates many tables as the data is denormalized and flattened across multiple dimensions. However, given Cassandra's more strict requirements for data access, this forces us into making even more tables. So we have a bit of an explosion of tables that must be created, maintained, written to and read from.
+
+The majority of the tables are counter-based. Tables with counters cannot contain non-counter columns. The CQL veneer somewhat confuses things though. So each table can only have counter columns except for those columns that are part of the primary key. Regarding the primary key, there's a row key and then a primary key, and they're not the same in many cases. The row key is the set of columns that appears in double parenthesis and the primary key is the set of columns in single parenthesis. The row key columns are implicitly part of the primary key. For example, in the following:
+
+	PRIMARY KEY ((a, b), c, d)
+
+a and b are the composite row key and a+b, c, and d are the primary key. 
+
+Cassandra traditionally handles and encourages wide rows. That is a linearally growing set of columns, on the order of thousands to low millions. However, anecdotal research suggests that counters don't work well with this approach, so we want to use wide-ish rows, where we have 1,000 columns at most. 
+
+In order to minimize the number of queries that need to be performed to the client, we're bucketing counts by a predefined date range. For most users, they want to see the counts for the current month, or last year, or the year-to-date numbers. If we predefine these date ranges we can precalculate the values and allow for a single query. For example, if we assume that 'show values by day for the current month' is a common date range, then we can bucketing ~30 days of counts by the current month. Then when the user wants to see 'this month's' worth of data, we just query by this month and get back all the rows/columns. Previously all of our data was bucketed by discrete dates, but this yielded the need for dozesns of queries for the basic numbers in some cases.
+
+Example:
+
+	CREATE TABLE foo (
+	    dateunit VARCHAR,
+	    merchant VARCHAR,
+	    date_ VARCHAR,
+	    count_ COUNTER,
+	    PRIMARY KEY ((dateunit, merchant), date_)
+	);
+
+The dateunit is the unit for the date_ column. Each row for a given date unit will include date_ column values with that granularity. For example, if the dateunit is WEEK, the dates will be in weeks.
+
+There are some common sets of filters:
+
+	Dates
+	Date units
+	Source type
+
+Counts:
+
+	*all*
+	category
+		state
+	ean13
+		state
+	manufacturer
+		category
+			state
+			udid
+		state
+			udid
+		udid
+	merchant
+		category
+			manufacturer
+			state
+			udid
+		ean13
+			state
+		location
+			category
+			ean13
+		manufacturer
+		state
+		udid
+	state
