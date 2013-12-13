@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sudo docker build -t mysql-server - < Dockerfile
-sudo docker run -i -t mysql-server /bin/sh mysql-run.sh
+docker build -t mysql-server - < Dockerfile
+docker run -p 33306:3306 -i -t mysql-server 

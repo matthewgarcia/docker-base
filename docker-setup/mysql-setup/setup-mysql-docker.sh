@@ -1,3 +1,3 @@
 #!/bin/sh
 
-vagrant ssh -c "cd /vagrant/mysql-setup ; bash /vagrant/mysql-setup/run-docker.sh"
+vagrant ssh -c "cd /vagrant/mysql-setup ; bash ./run-docker.sh"
