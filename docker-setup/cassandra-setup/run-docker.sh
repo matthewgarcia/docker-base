@@ -1,6 +1,4 @@
 #!/bin/bash
 
-cd cassandra-dir
 sudo docker build -t cassandra-serv < Dockerfile .
-sudo docker run -i -t cassandra-serv /bin/bash
-
+sudo docker run -link mysql:db -i -t cassandra-serv /bin/bash

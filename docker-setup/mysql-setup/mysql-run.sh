@@ -1,4 +1,4 @@
 #!/bin/sh
 
-mysqld &
+mysqld
 sleep 5
